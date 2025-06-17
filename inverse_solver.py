@@ -174,7 +174,7 @@ def main():
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     # 1. Generate synthetic data
-    data = ExampleData(num_samples=500, std_noise=0.1)
+    data = ExampleData(num_samples=500, std_noise=0.05)
     x_obs, y_obs = data.make_data()
 
     # 2. Train GP model on the forward data
@@ -192,7 +192,7 @@ def main():
 
     for ax, y0 in zip(axes, y_vals):
         # 3. Sample from posterior p(x|y0) using MCMC
-        samples, log_prob = model.sample_posterior_x(y0, num_walkers=50, steps=2000, burn=200)
+        samples, log_prob = model.sample_posterior_x(y0, num_walkers=200, steps=1000, burn=200)
         hist_pred, x_edges, y_edges = np.histogram2d(
             samples[:, 0], samples[:, 1],
             bins=res_pred, range=[[-3, 3], [-3, 3]], density=True
@@ -203,7 +203,7 @@ def main():
         # Overlay the true region of x that corresponds to y0
         mask = data.get_xmask_for_y(y0, tol, num_grid).reshape(num_grid, num_grid).cpu().numpy()
         rgba = np.zeros((num_grid, num_grid, 4))
-        rgba[mask] = [1.0, 1.0, 1.0, 0.65]
+        rgba[mask] = [1.0, 1.0, 1.0, 0.8]
         ax.imshow(rgba, origin='lower', extent=[-3,3,-3,3])
 
         ax.set_title(f"GP-MCMC p(x|y={y0:.2f})")
